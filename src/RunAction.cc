@@ -40,6 +40,12 @@
 #include "G4UnitsTable.hh"
 #include "G4SystemOfUnits.hh"
 
+#include "G4HadronicInteraction.hh"
+#include "G4HadronicInteractionRegistry.hh"
+#include "G4INCLXXInterface.hh"
+#include "G4AblaInterface.hh"
+#include "G4INCLXXInterfaceStore.hh"
+
 #include <fstream>
 
 namespace GdNCap
@@ -80,6 +86,24 @@ RunAction::~RunAction()
 
 void RunAction::BeginOfRunAction(const G4Run*)
 {
+    // Get hold of pointers to the INCL++ model interfaces
+    std::vector<G4HadronicInteraction*> interactions = 
+        G4HadronicInteractionRegistry::Instance()->FindAllModels(G4INCLXXInterfaceStore::GetInstance()->getINCLXXVersionName());
+    for (std::vector<G4HadronicInteraction*>::const_iterator iInter = interactions.begin(), e = interactions.end(); iInter != e; ++iInter)
+    {
+        G4INCLXXInterface* theINCLInterface = static_cast<G4INCLXXInterface*>(*iInter);
+        if (theINCLInterface)
+        {
+            // Instantiate the ABLA model
+            G4HadronicInteraction* interaction = G4HadronicInteractionRegistry::Instance()->FindModel("ABLA");
+            G4AblaInterface* theAblaInterface = static_cast<G4AblaInterface*>(interaction);
+            if (!theAblaInterface)
+                theAblaInterface = new G4AblaInterface;
+            // Couple INCL++ to ABLA
+            G4cout << "Coupling INCLXX to ABLA" << G4endl;
+            theINCLInterface->SetDeExcitation(theAblaInterface);
+        }
+    }
   // inform the runManager to save random number seed
   G4RunManager::GetRunManager()->SetRandomNumberStore(false);
 
@@ -151,18 +175,24 @@ void RunAction::EndOfRunAction(const G4Run* run)
         nameFile.open(nameName, std::ios_base::out);
         for (auto itr = secondariesEnergy.begin(); itr != secondariesEnergy.end(); ++itr)
         {
-            totalEnergyFile << *itr << G4endl;
+            if (*itr > 0)
+            {
+                totalEnergyFile << *itr << G4endl;
+            }            
         }
         totalEnergyFile.close();
         for (auto itrVec = secondariesList.begin(); itrVec != secondariesList.end(); ++itrVec)
         {
-            for (auto itr = itrVec->begin(); itr != itrVec->end(); ++itr)
+            if (itrVec->size() > 0)
             {
-                energyFile << itr->first << " ";
-                nameFile << itr->second << " ";
+                for (auto itr = itrVec->begin(); itr != itrVec->end(); ++itr)
+                {
+                    energyFile << itr->first << " ";
+                    nameFile << itr->second << " ";
+                }
+                energyFile << G4endl;
+                nameFile << G4endl;
             }
-            energyFile << G4endl;
-            nameFile << G4endl;
         }
         energyFile.close();
         nameFile.close();

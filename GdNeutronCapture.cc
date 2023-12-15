@@ -42,6 +42,13 @@
 
 #include "QGSP_BIC_AllHP.hh"
 #include "QGSP_BIC_HP.hh"
+#include "QGSP_BERT_HP.hh"
+#include "QGSP_INCLXX_HP.hh"
+#include "FTFP_INCLXX_HP.hh"
+#include "FTFP_BERT_HP.hh"
+#include "FTFP_BERT.hh"
+#include "ShieldingLEND.hh"
+
 #include "G4ParticleHPManager.hh"
 
 using namespace GdNCap;
@@ -79,6 +86,10 @@ int main(int argc,char** argv)
   // Physics list
   //G4VModularPhysicsList* physicsList = new QGSP_BIC_HP;
   G4VModularPhysicsList* physicsList = new QGSP_BIC_AllHP;
+  //G4VModularPhysicsList* physicsList = new ShieldingLEND;
+  //G4VModularPhysicsList* physicsList = new FTFP_BERT_HP;
+  //G4VModularPhysicsList* physicsList = new FTFP_INCLXX_HP;
+  //G4VModularPhysicsList* physicsList = new FTFP_BERT;
   //G4VModularPhysicsList* physicsList = new QBBC;
   physicsList->SetVerboseLevel(2);
   runManager->SetUserInitialization(physicsList);
@@ -87,7 +98,7 @@ int main(int argc,char** argv)
   runManager->SetUserInitialization(new ActionInitialization());
 
   // Replaced HP environmental variables with C++ calls
-  //G4ParticleHPManager::GetInstance()->SetSkipMissingIsotopes(false);
+  G4ParticleHPManager::GetInstance()->SetSkipMissingIsotopes(true);
   G4ParticleHPManager::GetInstance()->SetDoNotAdjustFinalState(true);
   G4ParticleHPManager::GetInstance()->SetUseOnlyPhotoEvaporation(true);
   //G4ParticleHPManager::GetInstance()->SetNeglectDoppler(false);
@@ -114,13 +125,11 @@ int main(int argc,char** argv)
     UImanager->ApplyCommand(command+fileName);
   }
   else {
-    //runManager->SetNumberOfThreads(1);
+    runManager->SetNumberOfThreads(1);
     // interactive mode
-    //UImanager->ApplyCommand("/process/had/particle_hp/do_not_adjust_final_state true");
-    //UImanager->ApplyCommand("/process/had/particle_hp/skip_missing_isotopes true");
     UImanager->ApplyCommand("/run/verbose 2");
-    //UImanager->ApplyCommand("/event/verbose 2");
-    //UImanager->ApplyCommand("/tracking/verbose 2");
+    UImanager->ApplyCommand("/event/verbose 2");
+    UImanager->ApplyCommand("/tracking/verbose 2");
     UImanager->ApplyCommand("/control/execute init_vis.mac");
     ui->SessionStart();
     delete ui;

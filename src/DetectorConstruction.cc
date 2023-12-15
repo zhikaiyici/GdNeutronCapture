@@ -42,6 +42,8 @@
 
 #include "G4Isotope.hh"
 
+#include "G4VisAttributes.hh"
+
 namespace GdNCap
 {
 
@@ -53,16 +55,35 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   G4NistManager* nist = G4NistManager::Instance();
 
   G4Isotope* Gd155 = new G4Isotope("Gd155", 64, 155, 154.9226294 * g / mole);
-  G4Isotope* Gd157 = new G4Isotope("Gd155", 64, 157, 156.9239674 * g / mole);
-  G4Element* elGd = new G4Element("enrichedGd", "enGd", 1);
-  elGd->AddIsotope(Gd155, 100. * perCent);
-  G4Material* myGd = new G4Material("myGd", 7.9 * g / cm3, 1);
-  myGd->AddElement(elGd, 100. * perCent);
+  G4Element* elGd155 = new G4Element("enrichedGd155", "enGd155", 1);
+  elGd155->AddIsotope(Gd155, 100. * perCent);
+  G4Material* myGd155 = new G4Material("myGd155", 7.9 * g / cm3, 1);
+  myGd155->AddElement(elGd155, 100. * perCent);
+
+  G4Isotope* Gd157 = new G4Isotope("Gd157", 64, 157, 156.9239674 * g / mole);
+  G4Element* elGd157 = new G4Element("enrichedGd157", "enGd157", 1);
+  elGd157->AddIsotope(Gd157, 100. * perCent);
+  G4Material* myGd157 = new G4Material("myGd157", 7.9 * g / cm3, 1);
+  myGd157->AddElement(elGd157, 100. * perCent);
+
+  G4Isotope* H1 = new G4Isotope("H1", 1, 1, 1.007825 * g / mole);
+  G4Element* elH1 = new G4Element("enrichedH1", "enH1", 1);
+  elH1->AddIsotope(H1, 100. * perCent);
+  G4Material* myH1 = new G4Material("myH1", 1.0 * g / cm3, 1);
+  myH1->AddElement(elH1, 100. * perCent);
+
+  G4Isotope* C12 = new G4Isotope("C12", 6, 12, 12.0 * g / mole);
+  G4Element* elC12 = new G4Element("enrichedC12", "enC12", 1);
+  elC12->AddIsotope(C12, 100. * perCent);
+  G4Material* myC12 = new G4Material("myC12", 2.267 * g / cm3, 1);
+  myC12->AddElement(elC12, 100. * perCent);
+
+  G4Material* natC = nist->FindOrBuildMaterial("G4_C");
 
   // Envelope parameters
   //
   G4double env_sizeXY = 5. * cm, env_sizeZ = 1. * cm;
-  G4Material* env_mat = nist->FindOrBuildMaterial("myGd");
+  G4Material* env_mat = nist->FindOrBuildMaterial("myGd157");
 
   // Option to switch on/off checking of volumes overlaps
   //
@@ -81,6 +102,9 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   auto logicWorld = new G4LogicalVolume(solidWorld,  // its solid
     world_mat,                                       // its material
     "World");                                        // its name
+
+  G4VisAttributes* vis = new G4VisAttributes(false);
+  logicWorld->SetVisAttributes(vis);
 
   auto physWorld = new G4PVPlacement(nullptr,  // no rotation
     G4ThreeVector(),                           // at (0,0,0)
@@ -114,6 +138,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   //
   fScoringVolume = logicEnv;
 
+  G4cout << *(G4Material::GetMaterialTable()) << G4endl;
   //
   //always return the physical World
   //
