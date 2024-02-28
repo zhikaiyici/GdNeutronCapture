@@ -20,6 +20,7 @@ namespace GdNCap
 	void Accumulable::Reset()
 	{
 		secondariesList.clear();
+		secondariesEnergy.clear();
 	}
 	
 	void Accumulable::PushSecondariesList(std::vector<std::pair<G4double, G4String>> fSecondaries)
